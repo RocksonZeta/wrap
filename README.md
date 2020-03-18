@@ -31,6 +31,7 @@
 package main
 import (
 	"github.com/RocksonZeta/wrap/iriswrap"
+	"github.com/RocksonZeta/wrap/rediswrap"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 )
@@ -45,6 +46,7 @@ func main() {
 			AutoHead: true,
 		}
 	})
+	iriswrap.RedisClient = GetRedis()
 	app.Use(iriswrap.SessionFilter)
 
 	app.Get("/", func(ctx iris.Context) {
