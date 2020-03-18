@@ -70,3 +70,6 @@ type Err struct {
 	UserError bool   //user error or system error
 }
 ```
+
+## Architecture
+<img src="https://pic3.zhimg.com/v2-b829447a6149855ac44906d1c0202f12_r.jpg" alt="Architecture">
