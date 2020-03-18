@@ -19,7 +19,7 @@ func init() {
 			Wrap logger.Options
 		}
 	}{}
-	config.Log.Wrap = logger.Options{Console: true, Level: "trace", File: "logs/wrap_log1.%Y%m%d.log", ForceNewFile: false, ShowLocalIp: true}
+	config.Log.Wrap = logger.Options{Console: true, Level: "trace", File: "logs/wrap.%Y%m%d.log", ForceNewFile: false, ShowLocalIp: true}
 	configFile := "config.yml"
 	cwd := fileutil.FindFileDir(configFile)
 	fmt.Println("find config.yml in " + cwd)
