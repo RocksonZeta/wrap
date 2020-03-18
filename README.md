@@ -26,6 +26,30 @@
 12. sutil for struct
 13. timeutil
 
+### wrapiris : for iris
+```go
+func main() {
+	app := iris.New()
+	app.ContextPool.Attach(func() context.Context {
+		return &iriswrap.Context{
+			Context:        context.NewContext(app),
+			PageSize:       20,
+			AutoIncludeCss: true,
+			AutoIncludeJs:  false,
+			AutoHead: true,
+		}
+	})
+	app.Use(iriswrap.SessionFilter)
+
+	app.Get("/", func(ctx iris.Context) {
+		c := ctx.(*iriswrap.Context)
+		c.Ok(c.Session.Uid())
+	})
+	app.Listen(":9000")
+}
+
+```
+
 ### wraplog : for logging
 
 ### errs : common errs
