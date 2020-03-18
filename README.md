@@ -28,6 +28,12 @@
 
 ### wrapiris : for iris
 ```go
+package main
+import (
+	"github.com/RocksonZeta/wrap/iriswrap"
+	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
+)
 func main() {
 	app := iris.New()
 	app.ContextPool.Attach(func() context.Context {
