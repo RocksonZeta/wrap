@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/RocksonZeta/wrap/errs"
 	"github.com/RocksonZeta/wrap/utils/sqlutil"
@@ -38,6 +39,7 @@ func check(err error, state int, msg string) {
 	if msg != "" {
 		msg = err.Error()
 	}
+	fmt.Println("err type:", reflect.TypeOf(err))
 	panic(errs.Err{Err: err, Module: "Mysql", Pkg: pkg, State: state, Message: msg})
 }
 
@@ -74,7 +76,7 @@ func New(options Options) *Mysql {
 	}
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
 	if log.TraceEnabled() {
-		dbMap.TraceOn("mysql", new(mysqlLogger))
+		dbMap.TraceOn("[mysql]", new(mysqlLogger))
 	}
 	return &Mysql{DbMap: dbMap, MysqlExecutor: WrapExecutor(dbMap), options: options}
 }
@@ -91,7 +93,10 @@ func WrapExecutor(executor gorp.SqlExecutor) *MysqlExecutor {
 }
 
 func fatalError(err error) bool {
-	if err == sql.ErrNoRows {
+	if err == nil {
+		return false
+	}
+	if err == sql.ErrNoRows || strings.Index(err.Error(), "sql: expected") == 0 {
 		return false
 	}
 	return !gorp.NonFatalError(err)
@@ -227,7 +232,7 @@ func (m *MysqlExecutor) Exec(query string, args ...interface{}) sql.Result {
 	}
 	return r
 }
-func (m *MysqlExecutor) Get(result interface{}, table string, id interface{}, idField string) {
+func (m *MysqlExecutor) Get(result interface{}, table string, idField string, id interface{}) {
 	log.Trace().Func("GetTable").Str("table", table).Interface("id", id).Str("idField", idField).Send()
 	if idField == "" {
 		idField = "id"
@@ -238,7 +243,7 @@ func (m *MysqlExecutor) Get(result interface{}, table string, id interface{}, id
 func (m *MysqlExecutor) GetTable(result interface{}, id interface{}) {
 	log.Trace().Func("Get").Interface("id", id).Send()
 	resultT := reflect.TypeOf(result)
-	m.Get(result, resultT.Elem().Name(), id, "id")
+	m.Get(result, resultT.Elem().Name(), "id", id)
 }
 func (m *MysqlExecutor) GetBy(result interface{}, table string, kvs map[string]interface{}) {
 	log.Trace().Func("GetBy").Str("table", table).Interface("kvs", kvs).Send()
@@ -249,12 +254,20 @@ func (m *MysqlExecutor) GetBy(result interface{}, table string, kvs map[string]i
 	query += " limit 1"
 	m.SelectOne(result, query, kvs)
 }
-func (m *MysqlExecutor) List(result interface{}, table string, ids []int, idField string) {
-	log.Trace().Func("List").Str("table", table).Interface("ids", ids).Send()
+func (m *MysqlExecutor) List(result interface{}, table string, idField string, ids []int) {
+	log.Trace().Func("List").Str("table", table).Ints("ids", ids).Send()
 	if idField == "" {
 		idField = "id"
 	}
 	query := "select * from `" + table + "` where `" + idField + "` in (" + sqlutil.JoinInts(ids) + ") limit " + strconv.Itoa(len(ids))
+	m.Select(result, query)
+}
+func (m *MysqlExecutor) ListByStrIds(result interface{}, table string, idField string, ids []string) {
+	log.Trace().Func("List").Str("table", table).Strs("ids", ids).Send()
+	if idField == "" {
+		idField = "id"
+	}
+	query := "select * from `" + table + "` where `" + idField + "` in (" + sqlutil.JoinStrs(ids) + ") limit " + strconv.Itoa(len(ids))
 	m.SelectOne(result, query)
 }
 
@@ -264,7 +277,7 @@ func (m *MysqlExecutor) ListBy(result interface{}, table string, kvs map[string]
 	for k := range kvs {
 		query += " and `" + k + "`=:" + k
 	}
-	m.SelectOne(result, query, kvs)
+	m.Select(result, query, kvs)
 }
 func (m *MysqlExecutor) Inserts(list ...interface{}) {
 	log.Trace().Func("Inserts").Interface("list", list).Send()
@@ -284,7 +297,7 @@ func (m *MysqlExecutor) Updates(list ...interface{}) int64 {
 	return r
 }
 
-func (m *MysqlExecutor) Delete(table string, id int, idField string) sql.Result {
+func (m *MysqlExecutor) Delete(table string, idField string, id int) sql.Result {
 	log.Trace().Func("Delete").Str("table", table).Int("id", id).Str("idField", idField).Send()
 	query := "delete from `" + table + "` where `" + idField + "`=?"
 	r, err := m.SqlExecutor.Exec(query, id)
@@ -294,7 +307,7 @@ func (m *MysqlExecutor) Delete(table string, id int, idField string) sql.Result 
 	}
 	return r
 }
-func (m *MysqlExecutor) Deletes(table string, ids []int, idField string) sql.Result {
+func (m *MysqlExecutor) Deletes(table string, idField string, ids []int) sql.Result {
 	log.Trace().Func("Delete").Str("table", table).Ints("ids", ids).Str("idField", idField).Send()
 	query := "delete from `" + table + "` where `" + idField + "`in (" + sqlutil.JoinInts(ids) + ")"
 	r, err := m.SqlExecutor.Exec(query)
@@ -306,7 +319,7 @@ func (m *MysqlExecutor) Deletes(table string, ids []int, idField string) sql.Res
 }
 
 //Patch
-func (m *MysqlExecutor) Patch(table string, params interface{}, idField string) sql.Result {
+func (m *MysqlExecutor) Patch(table string, idField string, params interface{}) sql.Result {
 	log.Trace().Func("Patch").Str("table", table).Interface("params", params).Str("idField", idField).Send()
 	if idField == "" {
 		idField = "id"

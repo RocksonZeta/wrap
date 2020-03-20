@@ -17,6 +17,16 @@ func JoinInts(is []int) string {
 	}
 	return s[0 : len(s)-1]
 }
+func JoinStrs(ss []string) string {
+	s := ""
+	for _, iv := range ss {
+		s += "'" + iv + "',"
+	}
+	if "" == s {
+		return "null"
+	}
+	return s[0 : len(s)-1]
+}
 
 func JoinInt64s(is []int64) string {
 	s := ""

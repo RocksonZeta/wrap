@@ -1,6 +1,7 @@
 package sutil_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RocksonZeta/wrap/utils/sutil"
@@ -20,6 +21,7 @@ func (s *MapSuite) TestMap() {
 	fm.Each(func(k, v interface{}) {
 		s.Equal(1, k)
 	})
+	fmt.Println(m)
 }
 
 func TestMapSuite(t *testing.T) {

@@ -75,7 +75,6 @@ func New(options Options) *Redis {
 	client.AddHook(redisHook{})
 	// }
 	newRed := &Redis{Client: client, options: options}
-	redises.Store(options.Url, newRed)
 	return newRed
 }
 
@@ -142,7 +141,7 @@ func (r *Redis) Marshal(v interface{}) string {
 }
 
 func (r *Redis) Unmarshal(str string, result interface{}) {
-	log.Trace().Func("Unmarshal").Str("str", str).Send()
+	log.Trace().Func("Unmarshal").Str("str", str).Interface("result", result).Send()
 	if str == "" {
 		return
 	}
@@ -153,15 +152,80 @@ func (r *Redis) Unmarshal(str string, result interface{}) {
 	}
 }
 
-func (r *Redis) GetJson(key string, result interface{}) {
+func (r *Redis) GetJson(key string, result interface{}) bool {
 	log.Trace().Func("GetJson").Str("key", key).Interface("result", result).Send()
-	str := r.Get(key).Val()
+	cmd := r.Get(key)
+	err := cmd.Err()
+	if err != nil && isNilError(err) {
+		return false
+	}
+	str := cmd.Val()
+
 	r.Unmarshal(str, result)
+	return true
 }
 func (r *Redis) SetJson(key string, result interface{}, secs int) {
 	log.Trace().Func("SetJson").Str("key", key).Interface("result", result).Int("secs", secs).Send()
 	r.Set(key, r.Marshal(result), secs)
 }
+func (r *Redis) GetJsons(keys []string, result interface{}) bool {
+	log.Trace().Func("GetJsons").Strs("keys", keys).Interface("result", result).Send()
+	cmd := r.MGet(keys...)
+	err := cmd.Err()
+	if err != nil && isNilError(err) {
+		return false
+	}
+	strs := cmd.Val()
+	results := sutil.FromSlice(result).Make(len(keys))
+	for i, v := range strs {
+		if v == nil {
+			continue
+		}
+		r.Unmarshal(v.(string), results.GetRef(i))
+	}
+	return true
+}
+
+func (r *Redis) SetJsons(keys []string, values interface{}, secs int) {
+	if len(keys) <= 0 {
+		return
+	}
+	r.Pipelined(func(p redis.Pipeliner) error {
+		args := make([]interface{}, len(keys)*2)
+		valuesV := sutil.PtrValue(reflect.ValueOf(values))
+
+		for i := 0; i < len(args); i += 2 {
+			args[i] = keys[i/2]
+			args[i+1] = r.Marshal(valuesV.Index(i / 2).Interface())
+		}
+		p.MSet(args...)
+		for _, k := range keys {
+			p.Expire(k, time.Duration(secs)*time.Second)
+		}
+		return nil
+	})
+}
+func (r *Redis) SetJsonsByKv(kvs map[string]interface{}, secs int) {
+	log.Trace().Func("SetJsons").Interface("kvs", kvs).Send()
+	if len(kvs) == 0 {
+		return
+	}
+	r.Pipelined(func(p redis.Pipeliner) error {
+		args := make([]string, len(kvs)*2)
+		i := 0
+		for k, v := range kvs {
+			args[i] = k
+			args[i+1] = r.Marshal(v)
+			i += 2
+		}
+		p.MSet(args)
+		for k := range kvs {
+			p.Expire(k, time.Duration(secs)*time.Second)
+		}
+		return nil
+	})
+}
+
 func (r *Redis) Get(key string) *redis.StringCmd {
 	log.Trace().Func("Get").Str("key", key).Send()
 	cmd := r.Client.Get(key)
@@ -176,20 +240,24 @@ func (r *Redis) HSetJson(key, field string, value interface{}) {
 	log.Trace().Func("HSetJson").Str("key", key).Send()
 	r.Client.HSet(key, field, r.Marshal(value))
 }
-func (r *Redis) HGetJson(key, field string, result interface{}) {
+func (r *Redis) HGetJson(key, field string, result interface{}) bool {
 	log.Trace().Func("HGetJson").Str("key", key).Str("field", field).Interface("result", result).Send()
-	str := r.Client.HGet(key, field).Val()
+	cmd := r.Client.HGet(key, field)
+	str := cmd.Val()
+	err := cmd.Err()
+	if err != nil && isNilError(err) {
+		return false
+	}
 	r.Unmarshal(str, result)
+	return true
 }
 func (r *Redis) HMGetAllJson(key string, result interface{}) {
 	log.Trace().Func("HMGetAllJson").Str("key", key).Send()
 	m := r.Client.HGetAll(key).Val()
-	resultMap := sutil.FromMap(result)
-	resultMap.MakeWithSize(len(m))
+	resultMap := sutil.FromMap(result).MakeWithSize(len(m))
 	for key, value := range m {
 		err := resultMap.PutJson(key, []byte(value))
 		if err != nil {
-			log.Error().Func("HMGetAllJson").Stack().Err(err).Str("key", key)
 			check(err, ErrorMarshal, err.Error())
 		}
 	}

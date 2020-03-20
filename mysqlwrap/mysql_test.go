@@ -39,14 +39,13 @@ func (s *MysqlSuite) TestSelectOne() {
 	s.mysql.SelectOne(&result, "select * from User where id=:Id limit 1", User{Id: 1})
 }
 func (s *MysqlSuite) TestPatch() {
-	s.mysql.Patch("User", User{Id: 1, Name: "jim"}, "Id")
+	s.mysql.Patch("User", "Id", User{Id: 1, Name: "jim"})
 }
 func TestMysqlSuite(t *testing.T) {
 	suite.Run(t, new(MysqlSuite))
 }
 func TestConn(t *testing.T) {
 	option := mysqlwrap.Options{
-		Url:     "root:6plzHiJKdUMlFZ@tcp(test.iqidao.com:43122)/good?charset=utf8mb4",
 		MaxOpen: 10,
 		MaxIdle: 3,
 	}

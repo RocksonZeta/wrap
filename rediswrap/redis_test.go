@@ -30,11 +30,18 @@ func (s *RedisSuite) TearDownTest() {
 	s.client.Close()
 }
 func (s *RedisSuite) TestGet() {
+	// u := User{Id: 1, Name: "jim"}
+	// s.client.SetJson("k1", u, 3)
+	var old User
+	s.False(s.client.GetJson("k1", &old))
+}
+func (s *RedisSuite) TestGetM() {
 	u := User{Id: 1, Name: "jim"}
 	s.client.SetJson("k1", u, 3)
-	var old User
-	s.client.GetJson("k1", &old)
-	s.Equal(u.Id, old.Id)
+	s.client.SetJson("k2", u, 3)
+	var old []User
+	s.True(s.client.GetJsons([]string{"k1", "k0", "k2"}, &old))
+	fmt.Println(old)
 }
 func (s *RedisSuite) TestHGetAll() {
 	u := User{Id: 1, Name: "jim"}
@@ -43,6 +50,7 @@ func (s *RedisSuite) TestHGetAll() {
 	var all map[string][]User
 	s.client.HMGetAllJson("ha", &all)
 	s.Equal(2, len(all))
+	fmt.Println("all:", all)
 }
 func (s *RedisSuite) TestHGet() {
 	ps := s.client.Subscribe("c1")

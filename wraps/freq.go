@@ -6,6 +6,7 @@ import (
 	"github.com/RocksonZeta/wrap/msclient"
 	"github.com/RocksonZeta/wrap/mysqlwrap"
 	"github.com/RocksonZeta/wrap/osswrap"
+	"github.com/RocksonZeta/wrap/redised"
 	"github.com/RocksonZeta/wrap/rediswrap"
 	"github.com/RocksonZeta/wrap/requestwrap"
 )
@@ -19,6 +20,9 @@ var osses sync.Map
 var requests sync.Map
 var calls sync.Map
 
+func GetRedisedMysql(ro rediswrap.Options, mo mysqlwrap.Options) *redised.RedisedMysql {
+	return redised.NewRedisedMysql(GetRedis(ro), GetMysql(mo))
+}
 func GetRedis(options rediswrap.Options) *rediswrap.Redis {
 	old, ok := redises.Load(options.Url)
 	if ok {

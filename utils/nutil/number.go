@@ -103,8 +103,14 @@ func IsString(v interface{}) bool {
 	return ok
 }
 func String(v interface{}) string {
-	if a, ok := v.(string); ok {
-		return a
+
+	switch e := v.(type) {
+	case string:
+		return e
+	case int:
+		return strconv.Itoa(e)
+	case int64:
+		return strconv.FormatInt(e, 10)
 	}
 	return fmt.Sprintf("%v", v)
 }
