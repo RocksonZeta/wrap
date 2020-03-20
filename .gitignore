@@ -15,3 +15,5 @@ main.go
 # vendor/
 logs
 *.log
+
+wraps/*test.go
