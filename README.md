@@ -48,6 +48,10 @@ func main() {
 	})
 	iriswrap.RedisClient = GetRedis()
 	app.Use(iriswrap.SessionFilter)
+	tpl := iris.HTML("view", ".html")
+	tpl.Reload(config.Config.DevMode)
+	app.RegisterView(tpl)
+	app.HandleDir("/static", "static")
 
 	app.Get("/", func(ctx iris.Context) {
 		c := ctx.(*iriswrap.Context)

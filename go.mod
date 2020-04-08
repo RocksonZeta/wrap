@@ -3,7 +3,7 @@ module github.com/RocksonZeta/wrap
 go 1.13
 
 require (
-	github.com/RocksonZeta/logger v1.0.5
+	github.com/RocksonZeta/logger v1.0.6
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v2.0.6+incompatible
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496

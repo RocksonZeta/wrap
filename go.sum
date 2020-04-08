@@ -19,6 +19,8 @@ github.com/RocksonZeta/logger v1.0.4 h1:xdtX2OiQfDP7zGJx1PFkrIslfeZUGmPfjFQIHT+J
 github.com/RocksonZeta/logger v1.0.4/go.mod h1:KGkW1Xv6Te0hvxV3JI5Q+mbeEohN/wTPaNDUvrevcLY=
 github.com/RocksonZeta/logger v1.0.5 h1:6nME/ggg80PYafT8X+p3Wep5NKSZUnRI9A4VGPZPDvI=
 github.com/RocksonZeta/logger v1.0.5/go.mod h1:KGkW1Xv6Te0hvxV3JI5Q+mbeEohN/wTPaNDUvrevcLY=
+github.com/RocksonZeta/logger v1.0.6 h1:ObmCDL8F4BP92vX3BUfOhcx3HaZUyy/sA1ZWiwFbnwE=
+github.com/RocksonZeta/logger v1.0.6/go.mod h1:KGkW1Xv6Te0hvxV3JI5Q+mbeEohN/wTPaNDUvrevcLY=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 h1:WDC6ySpJzbxGWFh4aMxFFC28wwGp5pEuoTtvA4q/qQ4=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398/go.mod h1:a1uqRtAwp2Xwc6WNPJEufxJ7fx3npB4UV/JOLmbu5I0=
 github.com/afex/hystrix-go v0.0.0-20180209013831-27fae8d30f1a/go.mod h1:SkGFH1ia65gfNATL8TAiHDNxPzPdmEL5uirI2Uyuz6c=

@@ -1,6 +1,7 @@
 package errs
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -24,7 +25,8 @@ type Err struct {
 // type JsonResult Err
 
 func (e Err) Error() string {
-	return e.Message
+	bs, _ := json.Marshal(e)
+	return string(bs)
 }
 func (e Err) String() string {
 	return fmt.Sprintf("Status:%d,Message:%s", e.State, e.Message)

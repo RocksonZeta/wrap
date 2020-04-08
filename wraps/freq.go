@@ -1,6 +1,9 @@
 package wraps
 
 import (
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"sync"
 
 	"github.com/RocksonZeta/wrap/msclient"
@@ -9,7 +12,12 @@ import (
 	"github.com/RocksonZeta/wrap/redised"
 	"github.com/RocksonZeta/wrap/rediswrap"
 	"github.com/RocksonZeta/wrap/requestwrap"
+	"github.com/RocksonZeta/wrap/utils/fileutil"
+	"github.com/RocksonZeta/wrap/wraplog"
+	"gopkg.in/yaml.v2"
 )
+
+var log = wraplog.Logger.Fork("github.com/RocksonZeta/wrap/wraps", "")
 
 // wrap实例管理
 
@@ -69,4 +77,20 @@ func GetCall(baseUrl string, headers, cookies map[string]string, timeout int) *m
 	n := msclient.New(baseUrl, headers, cookies, timeout)
 	calls.Store(baseUrl, n)
 	return n
+}
+
+func GetConfig(config interface{}, configFileName string) error {
+	cwd := fileutil.FindFileDir(configFileName)
+	bs, err := ioutil.ReadFile(filepath.Join(cwd, configFileName))
+	if err != nil {
+		fmt.Println("read config.yml err. " + err.Error())
+		return err
+	} else {
+		err = yaml.Unmarshal(bs, config)
+		if err != nil {
+			fmt.Println("Unmarshal config.yml err. " + err.Error())
+			return err
+		}
+	}
+	return nil
 }
