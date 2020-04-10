@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -46,6 +47,9 @@ func FindFileDir(fileName string) string {
 
 func LoadYaml(ymlFileName string, config interface{}) error {
 	cwd := FindFileDir(ymlFileName)
+	if "" == cwd {
+		return errors.New("Not found " + ymlFileName)
+	}
 	bs, err := ioutil.ReadFile(filepath.Join(cwd, ymlFileName))
 	if err != nil {
 		return err
