@@ -1,10 +1,12 @@
 package fileutil
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/RocksonZeta/wrap/errs"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -40,4 +42,17 @@ func FindFileDir(fileName string) string {
 		break
 	}
 	return cur
+}
+
+func LoadYaml(ymlFileName string, config interface{}) error {
+	cwd := FindFileDir(ymlFileName)
+	bs, err := ioutil.ReadFile(filepath.Join(cwd, ymlFileName))
+	if err != nil {
+		return err
+	}
+	err = yaml.Unmarshal(bs, config)
+	if err != nil {
+		return err
+	}
+	return nil
 }
