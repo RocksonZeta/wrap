@@ -75,7 +75,7 @@ func New(options Options) *Mysql {
 		check(err, ErrorInit, err.Error())
 	}
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
-	if log.TraceEnabled() {
+	if log.DebugEnabled() {
 		dbMap.TraceOn("[mysql]", new(mysqlLogger))
 	}
 	return &Mysql{DbMap: dbMap, MysqlExecutor: WrapExecutor(dbMap), options: options}
@@ -279,8 +279,20 @@ func (m *MysqlExecutor) ListBy(result interface{}, table string, kvs map[string]
 	}
 	m.Select(result, query, kvs)
 }
+
+func (m *MysqlExecutor) Insert(obj interface{}) {
+	log.Trace().Func("Insert").Interface("obj", obj).Send()
+	err := m.SqlExecutor.Insert(obj)
+	if err != nil {
+		log.Error().Func("Insert").Stack().Err(err).Interface("obj", obj).Msg(err.Error())
+		check(err, ErrorInsert, err.Error())
+	}
+}
 func (m *MysqlExecutor) Inserts(list ...interface{}) {
 	log.Trace().Func("Inserts").Interface("list", list).Send()
+	if len(list) <= 0 {
+		return
+	}
 	err := m.SqlExecutor.Insert(list...)
 	if err != nil {
 		log.Error().Func("Insert").Stack().Err(err).Interface("list", list).Msg(err.Error())
