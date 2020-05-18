@@ -59,7 +59,7 @@ func (c *Call) Unmarshal(body []byte, result interface{}) error {
 }
 func (c *Call) Get(result interface{}, path string, query map[string]string) error {
 	log.Trace().Func("Get").Interface("path", path).Interface("query", query)
-	body, err := c.Request.Get(path, query)
+	body, _, err := c.Request.Get(path, query)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (c *Call) Get(result interface{}, path string, query map[string]string) err
 
 func (c *Call) Post(result interface{}, path string, query, form map[string]string, files []request.FileField) error {
 	log.Trace().Func("Post").Str("path", path).Interface("query", query).Interface("form", form).Int("files", len(files)).Send()
-	body, err := c.Request.Post(path, query, form, files)
+	body, _, err := c.Request.Post(path, query, form, files)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (c *Call) Post(result interface{}, path string, query, form map[string]stri
 }
 func (c *Call) PostFile(result interface{}, path string, query, form map[string]string, files map[string]string) error {
 	log.Trace().Func("PostFile").Str("path", path).Interface("query", query).Interface("form", form).Interface("files", files).Send()
-	body, err := c.Request.PostFile(path, query, form, files)
+	body, _, err := c.Request.PostFile(path, query, form, files)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (c *Call) PostFile(result interface{}, path string, query, form map[string]
 }
 func (c *Call) Put(result interface{}, path string, query, form map[string]string) error {
 	log.Trace().Func("Put").Str("path", path).Interface("query", query).Interface("form", form).Send()
-	body, err := c.Request.Put(path, query, form)
+	body, _, err := c.Request.Put(path, query, form)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (c *Call) Put(result interface{}, path string, query, form map[string]strin
 }
 func (c *Call) Delete(result interface{}, path string, query, form map[string]string) error {
 	log.Trace().Func("Delete").Str("path", path).Interface("query", query).Interface("form", form).Send()
-	body, err := c.Request.Delete(path, query, form)
+	body, _, err := c.Request.Delete(path, query, form)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (c *Call) Delete(result interface{}, path string, query, form map[string]st
 }
 func (c *Call) Patch(result interface{}, path string, query, form map[string]string) error {
 	log.Trace().Func("Patch").Str("path", path).Interface("query", query).Interface("form", form).Send()
-	body, err := c.Request.Delete(path, query, form)
+	body, _, err := c.Request.Delete(path, query, form)
 	if err != nil {
 		return err
 	}
