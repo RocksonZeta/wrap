@@ -33,7 +33,7 @@ func AESCBCPKCS5DecryptBase64(key32, ciphertext string) (string, error) {
 	if nil != err {
 		return "", err
 	}
-	bs, err := AESCBCPKCS5Decrypt(c, []byte(key32))
+	bs, err := AESCBCPKCS5Decrypt([]byte(key32), c)
 	return string(bs), err
 }
 
