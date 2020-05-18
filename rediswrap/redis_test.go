@@ -21,19 +21,18 @@ type User struct {
 }
 
 func (s *RedisSuite) SetupTest() {
-	var options rediswrap.Options
 	// options.PoolSize = 100
 	// options.MinIdleConns = 1
-	s.client = rediswrap.New(options)
+	s.client, _ = rediswrap.NewFromUrl("redis://localhost:50002/0?PoolSize=2")
 }
 func (s *RedisSuite) TearDownTest() {
 	s.client.Close()
 }
 func (s *RedisSuite) TestGet() {
-	// u := User{Id: 1, Name: "jim"}
-	// s.client.SetJson("k1", u, 3)
+	u := User{Id: 1, Name: "jim"}
+	s.client.SetJson("k1", u, 3)
 	var old User
-	s.False(s.client.GetJson("k1", &old))
+	s.True(s.client.GetJson("k1", &old))
 }
 func (s *RedisSuite) TestGetM() {
 	u := User{Id: 1, Name: "jim"}

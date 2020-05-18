@@ -24,7 +24,7 @@ func (s *RequestSuite) TearDownTest() {
 }
 func (s *RequestSuite) TestGet() {
 	s.req = requestwrap.New("https://test.iqidao.com", nil, nil, 3)
-	bs, err := s.req.Get("/json/user/info", map[string]string{"a": "b"})
+	bs, _, err := s.req.Get("/json/user/info", map[string]string{"a": "b"})
 	fmt.Println(string(bs), err)
 	// bs, err = s.req.Get("/json/user/info", nil)
 	res, err := s.req.Request.Get("https://test.iqidao.com/json/user/info")
@@ -33,8 +33,9 @@ func (s *RequestSuite) TestGet() {
 }
 func (s *RequestSuite) TestPost() {
 	req := requestwrap.New("http://localhost:9000", nil, map[string]string{"sid": "xx"}, 3)
-	bs, err := req.Post("/form", nil, map[string]string{"name": "jim"}, nil)
+	bs, res, err := req.Get("/token", map[string]string{"name": "jim"})
 	s.Nil(err)
+	s.Equal(200, res.StatusCode)
 	fmt.Println(string(bs))
 }
 

@@ -29,38 +29,6 @@
 ### wrapiris : for iris
 ```go
 package main
-import (
-	"github.com/RocksonZeta/wrap/iriswrap"
-	"github.com/RocksonZeta/wrap/rediswrap"
-	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
-)
-func main() {
-	app := iris.New()
-	app.ContextPool.Attach(func() context.Context {
-		return &iriswrap.Context{
-			Context:        context.NewContext(app),
-			PageSize:       20,
-			AutoIncludeCss: true,
-			AutoIncludeJs:  false,
-			AutoHead: true,
-		}
-	})
-	iriswrap.RedisClient = GetRedis()
-	app.Use(iriswrap.SessionFilter)
-	tpl := iris.HTML("view", ".html")
-	tpl.Reload(config.Config.DevMode)
-	app.RegisterView(tpl)
-	app.HandleDir("/static", "static")
-
-	app.Get("/", func(ctx iris.Context) {
-		c := ctx.(*iriswrap.Context)
-		c.Ok(c.Session.Uid())
-	})
-	app.Listen(":9000")
-}
-
-```
 
 ### wraplog : for logging
 

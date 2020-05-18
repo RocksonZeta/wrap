@@ -8,8 +8,8 @@ import (
 	"encoding/hex"
 )
 
-func AESCBCPKCS5EncryptBase64(str32 string, data string) (string, error) {
-	bs, err := AESCBCPKCS5Encrypt([]byte(str32[0:16]), []byte(str32[16:32]), []byte(data))
+func AESCBCPKCS5EncryptBase64(key32 string, data string) (string, error) {
+	bs, err := AESCBCPKCS5Encrypt([]byte(key32[0:16]), []byte(key32[16:32]), []byte(data))
 	return base64.StdEncoding.EncodeToString(bs), err
 }
 func AESCBCPKCS5Encrypt(key []byte, vector []byte, data []byte) ([]byte, error) {
@@ -28,7 +28,7 @@ func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
 }
-func AESCBCPKCS5DecryptBase64(ciphertext, key32 string) (string, error) {
+func AESCBCPKCS5DecryptBase64(key32, ciphertext string) (string, error) {
 	c, err := base64.StdEncoding.DecodeString(ciphertext)
 	if nil != err {
 		return "", err
@@ -37,12 +37,12 @@ func AESCBCPKCS5DecryptBase64(ciphertext, key32 string) (string, error) {
 	return string(bs), err
 }
 
-func AESCBCPKCS5Decrypt(ciphertext, key []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key[0:16]) //选择加密算法
+func AESCBCPKCS5Decrypt(key32, ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key32[0:16]) //选择加密算法
 	if err != nil {
 		return nil, err
 	}
-	blockModel := cipher.NewCBCDecrypter(block, key[16:32])
+	blockModel := cipher.NewCBCDecrypter(block, key32[16:32])
 	plantText := make([]byte, len(ciphertext))
 	blockModel.CryptBlocks(plantText, ciphertext)
 	plantText = PKCS5Unpadding(plantText)

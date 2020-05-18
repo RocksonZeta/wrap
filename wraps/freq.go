@@ -28,6 +28,9 @@ var osses sync.Map
 var requests sync.Map
 var calls sync.Map
 
+func GetRedisedMysqlUrl(redisUrl, mysqlUrl string) *redised.RedisedMysql {
+	return redised.NewRedisedMysql(GetRedisUrl(redisUrl), GetMysqlUrl(mysqlUrl))
+}
 func GetRedisedMysql(ro rediswrap.Options, mo mysqlwrap.Options) *redised.RedisedMysql {
 	return redised.NewRedisedMysql(GetRedis(ro), GetMysql(mo))
 }
@@ -40,6 +43,15 @@ func GetRedis(options rediswrap.Options) *rediswrap.Redis {
 	redises.Store(options.Url, red)
 	return red
 }
+func GetRedisUrl(redisUrl string) *rediswrap.Redis {
+	old, ok := redises.Load(redisUrl)
+	if ok {
+		return old.(*rediswrap.Redis)
+	}
+	red := rediswrap.NewFromUrl(redisUrl)
+	redises.Store(redisUrl, red)
+	return red
+}
 func GetMysql(options mysqlwrap.Options) *mysqlwrap.Mysql {
 	old, ok := mysqls.Load(options.Url)
 	if ok {
@@ -47,6 +59,15 @@ func GetMysql(options mysqlwrap.Options) *mysqlwrap.Mysql {
 	}
 	n := mysqlwrap.New(options)
 	mysqls.Store(options.Url, n)
+	return n
+}
+func GetMysqlUrl(mysqlUrl string) *mysqlwrap.Mysql {
+	old, ok := mysqls.Load(mysqlUrl)
+	if ok {
+		return old.(*mysqlwrap.Mysql)
+	}
+	n := mysqlwrap.NewFromUrl(mysqlUrl)
+	mysqls.Store(mysqlUrl, n)
 	return n
 }
 func GetOss(options osswrap.Options, bucketName string) *osswrap.Oss {

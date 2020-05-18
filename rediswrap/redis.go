@@ -3,7 +3,9 @@ package rediswrap
 import (
 	"context"
 	"encoding/json"
+	"net/url"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/RocksonZeta/wrap/errs"
@@ -49,6 +51,70 @@ type Options struct {
 	IdleTimeout  int
 }
 
+func ParseUrl(redisUrl string) (*redis.Options, error) {
+	urlParts, err := url.Parse(redisUrl)
+	if err != nil {
+		return nil, err
+	}
+	q := urlParts.Query()
+	urlParts.RawQuery = ""
+	opt, err := redis.ParseURL(urlParts.String())
+	if v := q.Get("PoolSize"); v != "" {
+		opt.PoolSize, _ = strconv.Atoi(v)
+	}
+	if v := q.Get("MinIdleConns"); v != "" {
+		opt.MinIdleConns, _ = strconv.Atoi(v)
+	}
+	if v := q.Get("IdleTimeout"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.IdleTimeout = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("PoolTimeout"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.PoolTimeout = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("ReadTimeout"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.ReadTimeout = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("DialTimeout"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.DialTimeout = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("WriteTimeout"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.WriteTimeout = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("IdleCheckFrequency"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.IdleCheckFrequency = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("MaxConnAge"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.MaxConnAge = time.Duration(vi) * time.Second
+	}
+	if v := q.Get("MaxRetries"); v != "" {
+		opt.MaxRetries, _ = strconv.Atoi(v)
+	}
+	if v := q.Get("MaxRetryBackoff"); v != "" {
+		vi, _ := strconv.Atoi(v)
+		opt.MaxRetryBackoff = time.Duration(vi) * time.Second
+	}
+	return opt, nil
+}
+func NewFromUrl(redisUrl string) *Redis {
+	option, err := ParseUrl(redisUrl)
+	if err != nil {
+		check(err, ErrorInit, err.Error())
+	}
+	return NewFromOption(option)
+}
+func NewFromOption(option *redis.Options) *Redis {
+	client := redis.NewClient(option)
+	client.AddHook(redisHook{})
+	newRed := &Redis{Client: client}
+	return newRed
+}
 func New(options Options) *Redis {
 	log.Trace().Interface("options", options).Send()
 	// red, ok := redises.Load(options.Url)
@@ -70,12 +136,7 @@ func New(options Options) *Redis {
 	if options.IdleTimeout > 0 {
 		opt.IdleTimeout = time.Duration(options.IdleTimeout) * time.Second
 	}
-	client := redis.NewClient(opt)
-	// if log.DebugEnabled() {
-	client.AddHook(redisHook{})
-	// }
-	newRed := &Redis{Client: client, options: options}
-	return newRed
+	return NewFromOption(opt)
 }
 
 var logHoot redis.Hook = redisHook{}
@@ -118,7 +179,7 @@ func (redisHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) e
 
 type Redis struct {
 	*redis.Client
-	options Options
+	// options Options
 }
 
 func (r *Redis) Close() {

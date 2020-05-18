@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RocksonZeta/wrap/errs"
 	"github.com/RocksonZeta/wrap/utils/sqlutil"
@@ -44,12 +46,29 @@ func check(err error, state int, msg string) {
 }
 
 type Options struct {
-	Url     string
-	MaxIdle int
-	MaxOpen int
+	Url         string
+	MaxIdle     int
+	MaxOpen     int
+	MaxLifetime int
 }
 
 // var mysqls sync.Map
+
+//NewFromUrl mysqlUrl:root:6plzHiJKdUMlFZ@tcp(test.iqidao.com:43122)/good?charset=utf8mb4&MaxOpen=2000&MaxIdle=10&MaxLifetime=60
+func NewFromUrl(mysqlUrl string) *Mysql {
+	log.Trace().Func("NewFromUrl").Interface("mysqlUrl", mysqlUrl).Send()
+	parts, err := url.Parse(mysqlUrl)
+	if err != nil {
+		check(err, ErrorInit, err.Error())
+	}
+	q := parts.Query()
+	var options Options
+	options.MaxOpen, _ = strconv.Atoi(q.Get("MaxOpen"))
+	options.MaxIdle, _ = strconv.Atoi(q.Get("MaxIdle"))
+	options.MaxLifetime, _ = strconv.Atoi(q.Get("MaxLifetime"))
+	options.Url = mysqlUrl
+	return New(options)
+}
 
 func New(options Options) *Mysql {
 	log.Trace().Func("New").Interface("options", options).Send()
@@ -66,6 +85,9 @@ func New(options Options) *Mysql {
 	db, err = sql.Open("mysql", options.Url)
 	db.SetMaxOpenConns(options.MaxOpen)
 	db.SetMaxIdleConns(options.MaxIdle)
+	if options.MaxLifetime > 0 {
+		db.SetConnMaxLifetime(time.Duration(options.MaxLifetime) * time.Second)
+	}
 	// mysqls.Store(options.Url, db)
 	// } else {
 	// 	db = old.(*sql.DB)

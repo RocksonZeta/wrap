@@ -98,29 +98,31 @@ func MergeQuery(p string, query map[string]string) string {
 func (c *Request) BasicAuth(user, password string) {
 	c.Request.BasicAuth = request.BasicAuth{Username: user, Password: password}
 }
-func (c *Request) Get(path string, query map[string]string) ([]byte, error) {
+func (c *Request) Get(path string, query map[string]string) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("Get").Interface("uri", c.uri(path)).Interface("query", query).Send()
 	c.Request.Params = query
-	res, err := c.Request.Get(c.uri(path))
+	res, err = c.Request.Get(c.uri(path))
 	if err != nil {
 		log.Error().Func("Get").Stack().Err(err).Interface("path", path).Interface("query", query).Interface("headers", c.Request.Headers).Interface("cookies", c.Request.Cookies).Dur("timeout", c.Request.Client.Timeout).Send()
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
 
-func (c *Request) Post(path string, query, form map[string]string, files []request.FileField) ([]byte, error) {
+func (c *Request) Post(path string, query, form map[string]string, files []request.FileField) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("Post").Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Int("files", len(files)).Send()
 	c.Request.Params = query
 	c.Request.Data = form
 	c.Request.Files = files
-	res, err := c.Request.Post(c.uri(path))
+	res, err = c.Request.Post(c.uri(path))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
 
 // PostForm send post form request.
@@ -143,75 +145,81 @@ func (c *Request) Post(path string, query, form map[string]string, files []reque
 //
 // 	form : = strings.NewReader("a=1&b=2")
 //
-func (c *Request) PostForm(path string, query map[string]string, form interface{}, files []request.FileField) ([]byte, error) {
+func (c *Request) PostForm(path string, query map[string]string, form interface{}, files []request.FileField) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("Post").Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Int("files", len(files)).Send()
 	c.Request.Params = query
 	// c.Request.Data = form
 	c.Request.Files = files
-	res, err := c.Request.PostForm(c.uri(path), form)
+	res, err = c.Request.PostForm(c.uri(path), form)
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
 
-func (c *Request) PostFile(path string, query, form map[string]string, files map[string]string) ([]byte, error) {
+func (c *Request) PostFile(path string, query, form map[string]string, files map[string]string) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("PostFile").Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Interface("files", files).Send()
 	fileFields := make([]request.FileField, len(files))
 	i := 0
 	for field, file := range files {
-		input, err := os.Open(file)
-		if err != nil {
+		input, ferr := os.Open(file)
+		err = ferr
+		if ferr != nil {
 			log.Error().Func("PostFile").Stack().Err(err).Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Interface("files", files).Send()
-			return nil, err
+			return
 		}
 		defer input.Close()
 		fileFields[i] = request.FileField{FieldName: field, FileName: filepath.Base(file), File: input}
 	}
 	return c.Post(c.uri(path), query, form, fileFields)
 }
-func (c *Request) Put(path string, query, form map[string]string) ([]byte, error) {
+func (c *Request) Put(path string, query, form map[string]string) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("Put").Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Send()
 	c.Request.Params = query
 	c.Request.Data = form
-	res, err := c.Request.Put(c.uri(path))
+	res, err = c.Request.Put(c.uri(path))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
-func (c *Request) Delete(path string, query, form map[string]string) ([]byte, error) {
+func (c *Request) Delete(path string, query, form map[string]string) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("Delete").Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Send()
 	c.Request.Params = query
 	c.Request.Data = form
-	res, err := c.Request.Delete(c.uri(path))
+	res, err = c.Request.Delete(c.uri(path))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
-func (c *Request) Patch(path string, query, form map[string]string) ([]byte, error) {
+func (c *Request) Patch(path string, query, form map[string]string) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("Patch").Str("uri", c.uri(path)).Interface("query", query).Interface("form", form).Send()
 	c.Request.Params = query
 	c.Request.Data = form
-	res, err := c.Request.Patch(c.uri(path))
+	res, err = c.Request.Patch(c.uri(path))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
-func (c *Request) PostJson(path string, query map[string]string, value interface{}) ([]byte, error) {
+func (c *Request) PostJson(path string, query map[string]string, value interface{}) (body []byte, res *request.Response, err error) {
 	log.Trace().Func("PostJson").Str("uri", c.uri(path)).Interface("query", query).Interface("value", value).Send()
 	c.Request.Params = query
 	c.Request.Json = value
-	res, err := c.Request.Post(c.uri(path))
+	res, err = c.Request.Post(c.uri(path))
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer res.Body.Close()
-	return ioutil.ReadAll(res.Body)
+	body, err = ioutil.ReadAll(res.Body)
+	return
 }
