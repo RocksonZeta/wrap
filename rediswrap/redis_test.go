@@ -23,7 +23,7 @@ type User struct {
 func (s *RedisSuite) SetupTest() {
 	// options.PoolSize = 100
 	// options.MinIdleConns = 1
-	s.client, _ = rediswrap.NewFromUrl("redis://localhost:50002/0?PoolSize=2")
+	s.client = rediswrap.NewFromUrl("redis://localhost:50002/0?PoolSize=2")
 }
 func (s *RedisSuite) TearDownTest() {
 	s.client.Close()

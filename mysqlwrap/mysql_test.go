@@ -15,11 +15,7 @@ type MysqlSuite struct {
 }
 
 func (s *MysqlSuite) SetupTest() {
-	option := mysqlwrap.Options{
-		MaxOpen: 10,
-		MaxIdle: 3,
-	}
-	s.mysql = mysqlwrap.New(option)
+	s.mysql = mysqlwrap.NewFromUrl("root:123456@tcp(localhost)/power?charset=utf8mb4&MaxIdle=2&MaxOpen=10")
 }
 func (s *MysqlSuite) AfterTest() {
 	// s.mysql.Close()

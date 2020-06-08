@@ -5,7 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
-	"encoding/hex"
 )
 
 func AESCBCPKCS5EncryptBase64(key32 string, data string) (string, error) {
@@ -38,7 +37,7 @@ func AESCBCPKCS5DecryptBase64(key32, ciphertext string) (string, error) {
 }
 
 func AESCBCPKCS5Decrypt(key32, ciphertext []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key32[0:16]) //选择加密算法
+	block, err := aes.NewCipher(key32[0:16])
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +54,7 @@ func PKCS5Unpadding(origData []byte) []byte {
 	return origData[:(length - unpadding)]
 }
 
-func ParseHex(hexString string) []byte {
-	r, _ := hex.DecodeString(hexString)
-	return r
-}
+// func ParseHex(hexString string) []byte {
+// 	r, _ := hex.DecodeString(hexString)
+// 	return r
+// }

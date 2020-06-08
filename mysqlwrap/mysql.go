@@ -66,7 +66,14 @@ func NewFromUrl(mysqlUrl string) *Mysql {
 	options.MaxOpen, _ = strconv.Atoi(q.Get("MaxOpen"))
 	options.MaxIdle, _ = strconv.Atoi(q.Get("MaxIdle"))
 	options.MaxLifetime, _ = strconv.Atoi(q.Get("MaxLifetime"))
-	options.Url = mysqlUrl
+	query := make(url.Values)
+	for k := range q {
+		if k[0] >= 'a' && k[0] <= 'z' {
+			query.Add(k, q.Get(k))
+		}
+	}
+	parts.RawQuery = query.Encode()
+	options.Url = parts.String()
 	return New(options)
 }
 
