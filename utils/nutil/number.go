@@ -98,6 +98,18 @@ func IsFloat(v interface{}) bool {
 	}
 	return false
 }
+func IsInteger(v interface{}) bool {
+	switch n := v.(type) {
+	case float32:
+		return true
+	case float64:
+		return true
+	case string:
+		_, err := strconv.ParseInt(n, 10, 64)
+		return err == nil
+	}
+	return false
+}
 func IsString(v interface{}) bool {
 	_, ok := v.(string)
 	return ok
@@ -170,10 +182,47 @@ func Int64(v interface{}) (int64, error) {
 	case float64:
 		return int64(n), nil
 	case string:
-		a, err := strconv.ParseFloat(n, 64)
-		return int64(a), err
+		return strconv.ParseInt(n, 10, 64)
 	}
-	return 0, errors.New("bad integer format.")
+	return 0, errors.New("bad int format")
+}
+func Uint64(v interface{}) (uint64, error) {
+	switch n := v.(type) {
+	case bool:
+		if n {
+			return 1, nil
+		}
+		return 0, nil
+	case uint8:
+		return uint64(n), nil
+	case uint16:
+		return uint64(n), nil
+	case uint32:
+		return uint64(n), nil
+	case uint64:
+		return uint64(n), nil
+	case int8:
+		return uint64(n), nil
+	case int16:
+		return uint64(n), nil
+	case int32:
+		return uint64(n), nil
+	case int64:
+		return uint64(n), nil
+	case int:
+		return uint64(n), nil
+	case uint:
+		return uint64(n), nil
+	case uintptr:
+		return uint64(n), nil
+	case float32:
+		return uint64(n), nil
+	case float64:
+		return uint64(n), nil
+	case string:
+		return strconv.ParseUint(n, 10, 64)
+	}
+	return 0, errors.New("bad uint format")
 }
 func Float64(v interface{}) (float64, error) {
 	switch n := v.(type) {
@@ -198,7 +247,6 @@ func Float64(v interface{}) (float64, error) {
 		return float64(n), nil
 	case int64:
 		return float64(n), nil
-
 	case int:
 		return float64(n), nil
 	case uint:
@@ -212,7 +260,7 @@ func Float64(v interface{}) (float64, error) {
 	case string:
 		return strconv.ParseFloat(n, 64)
 	}
-	return 0, errors.New("bad float format.")
+	return 0, errors.New("bad float format")
 }
 func IsNumber(v interface{}) bool {
 	switch n := v.(type) {
