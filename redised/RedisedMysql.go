@@ -1,7 +1,6 @@
 package redised
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 
@@ -112,7 +111,6 @@ func (r *RedisedMysql) ListByKvs(result interface{}, table, idField string, kvs 
 	}
 	r.Mysql.ListBy(result, table, kvs)
 	idsFromMysql := cutil.ColInt(result, idField)
-	fmt.Println(result, idField, idsFromMysql)
 	r.Redis.SetJson(key, idsFromMysql, r.Ttl)
 }
 
