@@ -366,14 +366,24 @@ func (m *MysqlExecutor) Patch(table string, idField string, params interface{}) 
 		idField = "id"
 	}
 	query := "update `" + table + "` set "
-	s := sutil.New(params)
-	for _, field := range s.Fields() {
-		name := field.Name()
-		// if strings.ToLower(name) == strings.ToLower(idField) {
-		if name == idField {
-			continue
+	if kvs, ok := params.(map[string]interface{}); ok {
+		for field := range kvs {
+			if field == idField {
+				continue
+			}
+			query += "`" + field + "`=:" + field
 		}
-		query += "`" + name + "`=:" + name
+	} else {
+
+		s := sutil.New(params)
+		for _, field := range s.Fields() {
+			name := field.Name()
+			// if strings.ToLower(name) == strings.ToLower(idField) {
+			if name == idField {
+				continue
+			}
+			query += "`" + name + "`=:" + name
+		}
 	}
 	query += " where `" + idField + "`=:" + idField
 	return m.Exec(query, params)

@@ -37,6 +37,9 @@ func (s *MysqlSuite) TestSelectOne() {
 func (s *MysqlSuite) TestPatch() {
 	s.mysql.Patch("User", "Id", User{Id: 1, Name: "jim"})
 }
+func (s *MysqlSuite) TestPatchMap() {
+	s.mysql.Patch("User", "Id", map[string]interface{}{"Id": 1, "Name": "tom"})
+}
 func TestMysqlSuite(t *testing.T) {
 	suite.Run(t, new(MysqlSuite))
 }
