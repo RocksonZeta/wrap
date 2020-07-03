@@ -31,11 +31,8 @@ func (s *ValueSuite) TestString() {
 	s.Equal(v.String(), "123")
 	a := make([]int, 3)
 	// a[0] = 2
-	var b interface{}
-	b = 1
-	b = 1.0
 	fmt.Println(reflect.TypeOf(a).Kind())
-	fmt.Println(reflect.ValueOf(b).Kind())
+	fmt.Println(nutil.ValueOf(true).String())
 }
 func TestValueSuite(t *testing.T) {
 	suite.Run(t, new(ValueSuite))

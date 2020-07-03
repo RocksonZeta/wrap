@@ -2,7 +2,6 @@ package nutil
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -99,14 +98,27 @@ func IsFloat(v interface{}) bool {
 	return false
 }
 func IsInteger(v interface{}) bool {
-	switch n := v.(type) {
-	case float32:
+	switch v.(type) {
+	case uint8:
 		return true
-	case float64:
+	case uint16:
 		return true
-	case string:
-		_, err := strconv.ParseInt(n, 10, 64)
-		return err == nil
+	case uint32:
+		return true
+	case uint64:
+		return true
+	case int8:
+		return true
+	case int16:
+		return true
+	case int32:
+		return true
+	case int64:
+		return true
+	case int:
+		return true
+	case uint:
+		return true
 	}
 	return false
 }
@@ -119,12 +131,38 @@ func String(v interface{}) string {
 	switch e := v.(type) {
 	case string:
 		return e
+	case bool:
+		if e {
+			return "1"
+		} else {
+			return "0"
+		}
 	case int:
 		return strconv.Itoa(e)
+	case byte:
+		return strconv.FormatInt(int64(e), 10)
+	case int16:
+		return strconv.FormatInt(int64(e), 10)
+	case int32:
+		return strconv.FormatInt(int64(e), 10)
 	case int64:
 		return strconv.FormatInt(e, 10)
+	case uint:
+		return strconv.FormatUint(uint64(e), 10)
+	case uintptr:
+		return strconv.FormatUint(uint64(e), 10)
+	case uint16:
+		return strconv.FormatUint(uint64(e), 10)
+	case uint32:
+		return strconv.FormatUint(uint64(e), 10)
+	case uint64:
+		return strconv.FormatUint(e, 10)
+	case float32:
+		return strconv.FormatFloat(float64(e), 'f', -1, 64)
+	case float64:
+		return strconv.FormatFloat(e, 'f', -1, 64)
 	}
-	return fmt.Sprintf("%v", v)
+	return ""
 }
 func Int64Must(v interface{}) int64 {
 	a, _ := Int64(v)
@@ -262,8 +300,21 @@ func Float64(v interface{}) (float64, error) {
 	}
 	return 0, errors.New("bad float format")
 }
+func IsNumberable(v interface{}) bool {
+	if IsNumber(v) || IsNumberStr(v) {
+		return true
+	}
+	return false
+}
+func IsNumberStr(v interface{}) bool {
+	if n, ok := v.(string); ok {
+		_, err := strconv.ParseFloat(n, 64)
+		return err == nil
+	}
+	return false
+}
 func IsNumber(v interface{}) bool {
-	switch n := v.(type) {
+	switch v.(type) {
 	case uint8:
 		return true
 	case uint16:
@@ -290,9 +341,7 @@ func IsNumber(v interface{}) bool {
 		return true
 	case float64:
 		return true
-	case string:
-		_, err := strconv.ParseFloat(n, 64)
-		return err == nil
+
 	}
 	return false
 }

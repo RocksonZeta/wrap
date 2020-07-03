@@ -155,3 +155,13 @@ func (r *RedisedMysql) ListBySqlIntoMap(result interface{}, key, field string, q
 	r.Mysql.Select(result, query, args...)
 	r.Redis.HSet(key, field, result, r.Ttl)
 }
+
+//DelCacheList if we use listByXX method,we should clear cache in delete method
+func (r *RedisedMysql) DelCacheList(table string, kvs map[string]interface{}) {
+	r.Redis.Del(r.KVFn(table, kvs))
+}
+
+//DelCacheList if we use listByXX method,we should clear cache in delete method
+func (r *RedisedMysql) DelCacheListArgs(table string, kvs ...interface{}) {
+	r.Redis.Del(r.KVFn(table, sutil.Kv2Map(kvs...)))
+}

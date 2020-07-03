@@ -22,8 +22,9 @@ func (s *MysqlSuite) AfterTest() {
 }
 
 type User struct {
-	Id   int
-	Name string
+	Id    int
+	Name  string
+	Email string
 }
 
 func (s *MysqlSuite) TestSelect() {
@@ -35,10 +36,10 @@ func (s *MysqlSuite) TestSelectOne() {
 	s.mysql.SelectOne(&result, "select * from User where id=:Id limit 1", User{Id: 1})
 }
 func (s *MysqlSuite) TestPatch() {
-	s.mysql.Patch("User", "Id", User{Id: 1, Name: "jim"})
+	s.mysql.Patch("User", "Id", User{Id: 1, Name: "jim", Email: "a@b.c"})
 }
 func (s *MysqlSuite) TestPatchMap() {
-	s.mysql.Patch("User", "Id", map[string]interface{}{"Id": 1, "Name": "tom"})
+	s.mysql.Patch("User", "Id", map[string]interface{}{"Id": 1, "Name": "tom", "email": "zz@aa.com"})
 }
 func TestMysqlSuite(t *testing.T) {
 	suite.Run(t, new(MysqlSuite))

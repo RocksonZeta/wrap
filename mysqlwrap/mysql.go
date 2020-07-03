@@ -359,7 +359,7 @@ func (m *MysqlExecutor) Deletes(table string, idField string, ids []int) sql.Res
 	return r
 }
 
-//Patch
+//Patch update table by idFieldidField must in params ,update `table` set k1=v1,k2=v2 where `idField`=params[idField]
 func (m *MysqlExecutor) Patch(table string, idField string, params interface{}) sql.Result {
 	log.Trace().Func("Patch").Str("table", table).Interface("params", params).Str("idField", idField).Send()
 	if idField == "" {
@@ -371,10 +371,9 @@ func (m *MysqlExecutor) Patch(table string, idField string, params interface{}) 
 			if field == idField {
 				continue
 			}
-			query += "`" + field + "`=:" + field
+			query += "`" + field + "`=:" + field + ","
 		}
 	} else {
-
 		s := sutil.New(params)
 		for _, field := range s.Fields() {
 			name := field.Name()
@@ -382,9 +381,16 @@ func (m *MysqlExecutor) Patch(table string, idField string, params interface{}) 
 			if name == idField {
 				continue
 			}
-			query += "`" + name + "`=:" + name
+			query += "`" + name + "`=:" + name + ","
 		}
 	}
-	query += " where `" + idField + "`=:" + idField
+	query = query[0:len(query)-1] + " where `" + idField + "`=:" + idField
 	return m.Exec(query, params)
+}
+
+//PatchArgs .update `table` set k1=v1,k2=v2 where `idField`=id ,
+func (m *MysqlExecutor) PatchArgs(table string, idField string, idValue interface{}, kvs ...interface{}) sql.Result {
+	params := sutil.Kv2Map(kvs)
+	params[idField] = idValue
+	return m.Patch(table, idField, params)
 }

@@ -78,7 +78,11 @@ func Unpick(s interface{}, keys ...string) map[string]interface{} {
 }
 func Kv2Map(s ...interface{}) map[string]interface{} {
 	r := make(map[string]interface{})
-	for i := 0; i < len(s); i++ {
+	for i := 0; i < len(s); i += 2 {
+		if i >= len(s)-1 {
+			r[s[i].(string)] = nil
+			return r
+		}
 		k := s[i].(string)
 		if i+1 < len(s) {
 			r[k] = s[i+1]

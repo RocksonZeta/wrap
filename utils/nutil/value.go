@@ -1,6 +1,13 @@
 package nutil
 
-import "reflect"
+import (
+	"encoding/json"
+	"reflect"
+	"strconv"
+	"strings"
+
+	"github.com/fatih/structs"
+)
 
 func ValueOf(v interface{}) Value {
 	return Value{V: v}
@@ -150,11 +157,65 @@ func (v Value) AsInt8() int8 {
 func (v Value) AsByte() byte {
 	return byte(v.AsFloat64())
 }
+func (v Value) AsMap() Map {
+	switch x := v.V.(type) {
+	case map[string]interface{}:
+		return x
+	case Map:
+		return x
+	}
+	if v.IsMap() {
+		vr := reflect.ValueOf(v.V)
+		r := NewMapLen(vr.Len())
+		iter := vr.MapRange()
+		for iter.Next() {
+			r[ValueOf(iter.Key().Interface()).String()] = iter.Value().Interface()
+		}
+		return r
+	}
+	if v.IsSlice() {
+		vr := reflect.ValueOf(v.V)
+		n := vr.Len()
+		r := NewMapLen(n)
+		for i := 0; i < n; i++ {
+			r[strconv.Itoa(i)] = vr.Index(i).Interface()
+		}
+		return r
+	}
+	if v.IsStruct() {
+		return structs.New(v.V).Map()
+	}
+	return nil
+}
+
+func (v Value) AsList() List {
+	switch v.V.(type) {
+	case List, []interface{}:
+		return v.V.(List)
+	}
+	if v.IsSlice() || v.IsArray() {
+		vr := reflect.ValueOf(v.V)
+		n := vr.Len()
+		r := NewList(n)
+		for i := 0; i < n; i++ {
+			r[i] = vr.Index(i).Interface()
+		}
+		return r
+	}
+	return nil
+}
+
 func (v Value) IsString() bool {
 	return IsString(v.V)
 }
 func (v Value) IsNumber() bool {
 	return IsNumber(v.V)
+}
+func (v Value) IsNumberStr() bool {
+	return IsNumberStr(v.V)
+}
+func (v Value) IsNumberable() bool {
+	return IsNumberable(v.V)
 }
 func (v Value) IsFloat() bool {
 	return IsFloat(v.V)
@@ -163,6 +224,9 @@ func (v Value) IsInteger() bool {
 	return IsInteger(v.V)
 }
 
+func (v Value) IsArray() bool {
+	return reflect.TypeOf(v.V).Kind().String() == "array"
+}
 func (v Value) IsSlice() bool {
 	return reflect.TypeOf(v.V).Kind().String() == "slice"
 }
@@ -174,4 +238,33 @@ func (v Value) IsStruct() bool {
 }
 func (v Value) IsPtr() bool {
 	return reflect.TypeOf(v.V).Kind().String() == "ptr"
+}
+
+//Compare 0:v ==a ,1:v>a,-1:v<a
+func (v Value) Compare(a Value) int {
+	if v.IsString() || a.IsString() {
+		return strings.Compare(v.String(), a.String())
+	}
+	v1, err1 := v.Float64()
+	v2, err2 := a.Float64()
+	if err1 == nil && err2 == nil {
+		r := v1 - v2
+		if r == 0 {
+			return 0
+		} else if r > 0 {
+			return 1
+		} else {
+			return -1
+		}
+	}
+	return 0
+}
+
+func (v Value) MarshalJSON() (string, error) {
+	bs, err := json.Marshal(v.V)
+	return string(bs), err
+}
+func (v Value) MarshalJSONMust() string {
+	r, _ := v.MarshalJSON()
+	return r
 }

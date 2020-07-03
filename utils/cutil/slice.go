@@ -477,6 +477,27 @@ func MapIds(ids []int, fn func(id int) string) []string {
 	}
 	return r
 }
+func SetString(values []string) map[string]bool {
+	r := make(map[string]bool, len(values))
+	for _, v := range values {
+		r[v] = true
+	}
+	return r
+}
+func SetInt(ints []int) map[int]bool {
+	r := make(map[int]bool, len(ints))
+	for _, v := range ints {
+		r[v] = true
+	}
+	return r
+}
+func SetInt64(ints []int64) map[int64]bool {
+	r := make(map[int64]bool, len(ints))
+	for _, v := range ints {
+		r[v] = true
+	}
+	return r
+}
 
 // func Map(arr interface{}, r interface{}, fn func(i int) interface{}) {
 // 	arrV := reflect.ValueOf(arr)
