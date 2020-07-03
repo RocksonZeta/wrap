@@ -172,7 +172,8 @@ func (m *Mysql) WithTx(fn func()) {
 	fn()
 }
 func (m *Mysql) Close() {
-	m.DbMap.Db.Close()
+	// not need to close if we using mysql pool
+	// m.DbMap.Db.Close()
 }
 
 type MysqlExecutor struct {
