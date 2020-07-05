@@ -57,23 +57,28 @@ type Options struct {
 //NewFromUrl mysqlUrl:root:6plzHiJKdUMlFZ@tcp(test.iqidao.com:43122)/good?charset=utf8mb4&MaxOpen=2000&MaxIdle=10&MaxLifetime=60
 func NewFromUrl(mysqlUrl string) *Mysql {
 	log.Trace().Func("NewFromUrl").Interface("mysqlUrl", mysqlUrl).Send()
-	parts, err := url.Parse(mysqlUrl)
-	if err != nil {
-		check(err, ErrorInit, err.Error())
-	}
-	q := parts.Query()
+	queryIndex := strings.LastIndex(mysqlUrl, "?")
 	var options Options
-	options.MaxOpen, _ = strconv.Atoi(q.Get("MaxOpen"))
-	options.MaxIdle, _ = strconv.Atoi(q.Get("MaxIdle"))
-	options.MaxLifetime, _ = strconv.Atoi(q.Get("MaxLifetime"))
-	query := make(url.Values)
-	for k := range q {
-		if k[0] >= 'a' && k[0] <= 'z' {
-			query.Add(k, q.Get(k))
+	if queryIndex != -1 {
+		parts, err := url.Parse(mysqlUrl[queryIndex:])
+		if err != nil {
+			check(err, ErrorInit, err.Error())
 		}
+		q := parts.Query()
+		options.MaxOpen, _ = strconv.Atoi(q.Get("MaxOpen"))
+		options.MaxIdle, _ = strconv.Atoi(q.Get("MaxIdle"))
+		options.MaxLifetime, _ = strconv.Atoi(q.Get("MaxLifetime"))
+		query := make(url.Values)
+		for k := range q {
+			if k[0] >= 'a' && k[0] <= 'z' {
+				query.Add(k, q.Get(k))
+			}
+		}
+		parts.RawQuery = query.Encode()
+		options.Url = mysqlUrl[0:queryIndex+1] + query.Encode()
+	} else {
+		options.Url = mysqlUrl
 	}
-	parts.RawQuery = query.Encode()
-	options.Url = parts.String()
 	return New(options)
 }
 
