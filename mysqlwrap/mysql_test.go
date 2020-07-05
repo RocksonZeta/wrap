@@ -15,8 +15,7 @@ type MysqlSuite struct {
 }
 
 func (s *MysqlSuite) SetupTest() {
-	// s.mysql = mysqlwrap.NewFromUrl("root:123456@tcp(localhost)/power?charset=utf8mb4&MaxIdle=2&MaxOpen=10")
-	s.mysql = mysqlwrap.NewFromUrl("test_iqd_rw:5MOU6y#tnzOwBMrv@tcp(rm-uf6dus34x3o5s3y02co.mysql.rds.aliyuncs.com:3306)/tools?charset=utf8mb4&MaxOpen=10")
+	s.mysql = mysqlwrap.NewFromUrl("root:123456@tcp(localhost)/power?charset=utf8mb4&MaxIdle=2&MaxOpen=10")
 }
 func (s *MysqlSuite) AfterTest() {
 	// s.mysql.Close()
