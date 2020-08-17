@@ -231,7 +231,7 @@ func (r *Redis) SetJson(key string, result interface{}, secs int) {
 }
 func (r *Redis) GetJsons(keys []string, result interface{}) bool {
 	log.Trace().Func("GetJsons").Strs("keys", keys).Interface("result", result).Send()
-	GetJsons	if len(keys) == 0 {
+	if len(keys) == 0 {
 		return false
 	}
 	cmd := r.MGet(keys...)
