@@ -115,6 +115,9 @@ func (r *RedisedMysql) ListByKvs(result interface{}, table, idField string, kvs 
 }
 
 func (r *RedisedMysql) List(result interface{}, table, idField string, ids []int) {
+	if len(ids) == 0 {
+		return
+	}
 	keys := make([]string, len(ids))
 	for i, v := range ids {
 		keys[i] = r.KeyFn(table, v)
